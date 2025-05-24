@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Literature Assistant - Research Made Simple</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1f2937',
+                        secondary: '#374151',
+                        accent: '#3b82f6',
+                        light: '#f9fafb'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-primary">
+                            <i class="fas fa-book-open text-accent mr-2"></i>
+                            Literature Assistant
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div id="auth-buttons" class="flex space-x-3">
+                        <a href="login.html" class="btn btn-ghost">Sign In</a>
+                        <a href="register.html" class="btn btn-primary">Get Started</a>
+                    </div>
+                    <div id="user-menu" class="hidden relative">
+                        <button id="user-menu-button" class="flex items-center space-x-2 text-gray-700 hover:text-gray-900">
+                            <div class="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span id="username-display"></span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                            <a href="dashboard.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                            </a>
+                            <a href="my-records.html" class="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-folder-open mr-2"></i>My Records
+                            </a>
+                            <hr class="my-2">
+                            <button id="logout-btn" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-24">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold text-gray-900 mb-6">
+                    Research Made
+                    <span class="text-accent">Simple</span>
+                </h1>
+                <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                    Transform your research workflow with our intelligent literature management platform. 
+                    Upload, annotate, extract data, and organize your scientific literature like never before.
+                </p>
+                <div class="flex justify-center space-x-4">
+                    <a href="register.html" class="btn btn-primary btn-lg">
+                        Start Free Trial
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                    <button class="btn btn-ghost btn-lg" onclick="scrollToFeatures()">
+                        Learn More
+                        <i class="fas fa-play ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Background decoration -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-accent/5 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-24 bg-white/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Everything you need for literature research</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    From import to analysis, our platform provides all the tools researchers need to manage their literature effectively.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card">
+                    <div class="feature-icon bg-blue-50">
+                        <i class="fas fa-upload text-accent"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Smart Import</h3>
+                    <p class="text-gray-600">
+                        Upload CSV/Excel files with your literature lists. Our system automatically parses and organizes your references.
+                    </p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card">
+                    <div class="feature-icon bg-green-50">
+                        <i class="fas fa-file-pdf text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">PDF Management</h3>
+                    <p class="text-gray-600">
+                        Store, view, and annotate PDFs directly in your browser. Advanced PDF viewer with full-screen support.
+                    </p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card">
+                    <div class="feature-icon bg-purple-50">
+                        <i class="fas fa-camera text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Screenshot & Annotate</h3>
+                    <p class="text-gray-600">
+                        Capture charts, tables, and figures from papers. Add descriptions and metadata for easy organization.
+                    </p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card">
+                    <div class="feature-icon bg-orange-50">
+                        <i class="fas fa-chart-line text-orange-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Data Extraction</h3>
+                    <p class="text-gray-600">
+                        Integrate with WebPlotDigitizer to extract numerical data from charts and graphs efficiently.
+                    </p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card">
+                    <div class="feature-icon bg-red-50">
+                        <i class="fas fa-brain text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">ML-Ready Data</h3>
+                    <p class="text-gray-600">
+                        Organize your extracted data for machine learning analysis. Build datasets for research insights.
+                    </p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card">
+                    <div class="feature-icon bg-indigo-50">
+                        <i class="fas fa-search text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Advanced Search</h3>
+                    <p class="text-gray-600">
+                        Powerful search and filtering across all your literature. Find what you need instantly.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works -->
+    <section class="py-24 bg-gradient-to-br from-gray-50 to-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">How it works</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Get started with your research workflow in just a few simple steps.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <h3 class="text-xl font-semibold mb-3">Upload Your Literature</h3>
+                    <p class="text-gray-600">
+                        Import your reference lists from CSV or Excel files. The system automatically organizes and structures your data.
+                    </p>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <h3 class="text-xl font-semibold mb-3">Review & Annotate</h3>
+                    <p class="text-gray-600">
+                        View PDFs in-browser, capture screenshots of important figures, and add detailed annotations and metadata.
+                    </p>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <h3 class="text-xl font-semibold mb-3">Extract & Analyze</h3>
+                    <p class="text-gray-600">
+                        Use integrated tools to extract data from charts and prepare datasets for further analysis and research.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 bg-accent">
+        <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-white mb-4">Ready to transform your research?</h2>
+            <p class="text-xl text-blue-100 mb-8">
+                Join researchers worldwide who are already using Literature Assistant to streamline their workflow.
+            </p>
+            <a href="register.html" class="btn bg-white text-accent hover:bg-gray-50 btn-lg font-semibold">
+                Get Started Today
+                <i class="fas fa-rocket ml-2"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex justify-center items-center mb-4">
+                    <i class="fas fa-book-open text-accent mr-2"></i>
+                    <span class="text-xl font-bold">Literature Assistant</span>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    Empowering researchers with intelligent literature management tools.
+                </p>
+                <div class="text-sm text-gray-500">
+                    © 2024 Literature Assistant. Built for the research community.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        function scrollToFeatures() {
+            document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize auth state
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthState();
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

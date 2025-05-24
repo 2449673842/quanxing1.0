@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Literature Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- PDF.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.111/pdf.min.js"></script>
+    <script>
+        // IMPORTANT: Set PDF.js worker source
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.111/pdf.worker.min.js';
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                         primary: '#1f2937',
+                         secondary: '#374151',
+                         accent: '#3b82f6',
+                         light: '#f9fafb',
+                         'accent-50': '#eff6ff', 
+                         'accent-100': '#dbeafe',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <i class="fas fa-book-open text-accent mr-2"></i>
+                        <span class="font-bold text-lg text-gray-900">Literature Assistant</span>
+                    </a>
+                    <div class="ml-6 flex space-x-8">
+                        <a href="dashboard.html" class="border-accent text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"> 
+                            Dashboard
+                        </a>
+                        <a href="my-records.html" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                            My Records
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="relative">
+                        <button id="user-menu-button" class="flex items-center text-sm rounded-full text-gray-400 hover:text-gray-600">
+                            <span id="username-display" class="mr-3 text-gray-700"></span>
+                            <div class="h-8 w-8 rounded-full bg-accent flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                        </button>
+                        <div id="dropdown-menu" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 py-1 z-50">
+                            <a href="my-records.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Records</a>
+                            <button id="logout-btn" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign out</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">Research Dashboard</h1>
+            <p class="mt-1 text-sm text-gray-500">Manage your literature and extract insights from research papers</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Literature List Panel -->
+            <div class="lg:col-span-1 bg-white rounded-lg shadow flex flex-col">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-medium text-gray-900">Literature</h2>
+                        <button id="upload-literature-btn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus mr-2"></i>Upload
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-4 border-b border-gray-200">
+                    <div class="space-y-3">
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="literature-search"
+                                placeholder="Search literature..."
+                                class="input-field pl-10"
+                            >
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        <select id="literature-filter" class="input-field">
+                            <option value="all">All literature</option>
+                            <option value="with-pdf">Has PDF (Link or Uploaded)</option>
+                            <option value="without-pdf">No PDF</option>
+                        </select>
+                         <select id="literature-sort" class="input-field">
+                            <option value="created_at_desc">Recently Added</option>
+                            <option value="year_desc">Year (Newest First)</option>
+                            <option value="year_asc">Year (Oldest First)</option>
+                            <option value="title_asc">Title (A-Z)</option>
+                            <option value="title_desc">Title (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto flex-grow custom-scrollbar" style="min-height: 200px;">
+                    <div id="literature-list" class="divide-y divide-gray-100">
+                        {/* Literature items will be loaded here by js/app.js */}
+                    </div>
+                </div>
+                <div id="literature-pagination" class="p-4 border-t border-gray-200">
+                    {/* Pagination will be rendered here by js/app.js */}
+                </div>
+            </div>
+
+            <!-- PDF Viewer Panel -->
+            <div class="lg:col-span-2 bg-white rounded-lg shadow flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-gray-200 pdf-controls">
+                    <h2 class="text-lg font-medium text-gray-900">PDF Viewer</h2>
+                     <div id="pdf-viewer-controls" class="flex items-center space-x-1 sm:space-x-2">
+                         <button id="prev-page" class="btn btn-sm btn-ghost" title="Previous Page" disabled><i class="fas fa-arrow-left"></i></button>
+                         <input type="number" id="page-num-input" class="input-field w-16 text-center text-sm py-1 px-1" disabled>
+                         <span id="page-info" class="text-sm text-gray-600 whitespace-nowrap">of 0</span>
+                         <button id="next-page" class="btn btn-sm btn-ghost" title="Next Page" disabled><i class="fas fa-arrow-right"></i></button>
+                         <button id="zoom-out" class="btn btn-sm btn-ghost" title="Zoom Out" disabled><i class="fas fa-search-minus"></i></button>
+                         <span id="zoom-level" class="text-sm text-gray-600 w-12 text-center">100%</span>
+                         <button id="zoom-in" class="btn btn-sm btn-ghost" title="Zoom In" disabled><i class="fas fa-search-plus"></i></button>
+                         <button id="capture-btn" class="btn btn-sm btn-accent" title="Capture Screenshot (Ctrl/Cmd+C)" disabled><i class="fas fa-camera mr-1"></i>Capture</button>
+                         <button id="fullscreen-btn" class="btn btn-sm btn-ghost" title="Toggle Fullscreen"><i class="fas fa-expand"></i></button>
+                    </div>
+                </div>
+
+                <div id="pdf-container" class="relative flex-grow overflow-hidden flex flex-col pdf-canvas-wrapper">
+                    <div id="pdf-placeholder" class="flex items-center justify-center h-full bg-gray-50">
+                        <div class="text-center">
+                            <i class="fas fa-file-pdf text-4xl text-gray-300 mb-4"></i>
+                            <p class="text-gray-500 mb-2">Select a literature item to view PDF</p>
+                            <p class="text-xs text-gray-400 mt-1">Either associate an external PDF URL or upload a PDF file.</p>
+                        </div>
+                    </div>
+
+                    <div id="pdf-viewer" class="hidden h-full flex flex-col">
+                        <div id="pdf-canvas-container" class="flex-1 overflow-auto p-2 sm:p-4 bg-gray-100 custom-scrollbar">
+                             <div id="canvas-wrapper" class="relative inline-block shadow-lg mx-auto">
+                                <canvas id="pdf-canvas"></canvas>
+                                <div id="capture-overlay" class="hidden absolute inset-0 cursor-crosshair">
+                                    <div id="capture-rectangle" class="hidden absolute border-2 border-accent bg-accent bg-opacity-10"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screenshots Panel (Sidebar) -->
+            <div class="lg:col-span-1 bg-white rounded-lg shadow flex flex-col">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Screenshots</h2>
+                    <p class="text-sm text-gray-500 mt-1">Captured from current literature</p>
+                </div>
+                <div id="screenshots-container" class="overflow-y-auto flex-grow custom-scrollbar" style="min-height: 200px;">
+                    <div id="screenshots-list" class="p-4 space-y-4">
+                         <div id="screenshots-placeholder" class="text-center py-8">
+                            <i class="fas fa-camera text-3xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500 text-sm">No screenshots yet</p>
+                            <p class="text-gray-400 text-xs mt-1">Select literature with a PDF and capture charts/figures.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Literature Modal -->
+    <div id="upload-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">Upload Literature List</h3>
+                <button id="close-upload-modal-btn" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+            <div class="mt-2">
+                <div id="upload-drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-accent transition-colors cursor-pointer bg-gray-50 hover:bg-accent-50">
+                    <i class="fas fa-cloud-upload-alt text-5xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-700 font-medium">Drop CSV/Excel file here</p>
+                    <p class="text-sm text-gray-500 mt-1">or click to browse</p>
+                    <p class="text-xs text-gray-400 mt-3">Supports .csv, .xlsx, .xls</p>
+                    <input type="file" id="literature-file-input" class="hidden" accept=".csv,.xlsx,.xls,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv">
+                </div>
+                <div id="selected-file-info" class="mt-3 text-sm text-gray-600"></div>
+                <div id="upload-progress" class="hidden mt-4">
+                    <div class="flex justify-between mb-1">
+                        <span id="upload-status-text" class="text-sm font-medium text-gray-700">Uploading...</span>
+                        <span id="upload-percentage" class="text-sm font-medium text-accent">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div id="upload-progress-bar" class="bg-accent h-2.5 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div id="upload-error-message" class="hidden mt-3 text-sm text-red-600"></div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button id="cancel-upload" class="btn btn-ghost">Cancel</button>
+                <button id="confirm-upload" class="btn btn-primary" disabled>Upload File</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Edit Screenshot Information Modal -->
+    <div id="screenshot-edit-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">Edit Screenshot Information</h3>
+                <button id="close-screenshot-edit-modal-btn" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+            <form id="screenshot-form" class="space-y-4 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                 <input type="hidden" id="edit-screenshot-id">
+                <div>
+                    <label for="chart-type-select" class="block text-sm font-medium text-gray-700 mb-1">
+                        Chart Type
+                    </label>
+                    <select id="chart-type-select" class="input-field">
+                         <option value="">Select Type</option>
+                         <option value="scatter">Scatter Plot</option>
+                         <option value="line">Line Chart</option>
+                         <option value="bar">Bar Chart</option>
+                         <option value="pie">Pie Chart</option>
+                         <option value="histogram">Histogram</option>
+                         <option value="boxplot">Box Plot</option>
+                         <option value="heatmap">Heatmap</option>
+                         <option value="table">Table</option>
+                         <option value="figure">Figure (general image)</option>
+                         <option value="equation">Equation</option>
+                         <option value="text_block">Text Block</option>
+                         <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="screenshot-description" class="block text-sm font-medium text-gray-700 mb-1">
+                        Description
+                    </label>
+                    <textarea id="screenshot-description" rows="4" class="input-field" placeholder="Describe the content or significance of the screenshot."></textarea>
+                </div>
+                <div>
+                    <label for="wpd-data" class="block text-sm font-medium text-gray-700 mb-1">
+                        WebPlotDigitizer Data (JSON)
+                    </label>
+                    <textarea id="wpd-data" rows="8" class="input-field font-mono text-xs" placeholder="Paste JSON data exported from WebPlotDigitizer (File > Export > Data > JSON)."></textarea>
+                    <p class="mt-1 text-xs text-gray-500">This data will be associated with the screenshot for future analysis.</p>
+                </div>
+            </form>
+            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                <button id="cancel-screenshot-edit" class="btn btn-ghost">Cancel</button>
+                <button id="save-screenshot-changes" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Literature Details Modal -->
+    <div id="edit-literature-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">Edit Literature Details</h3>
+                <button id="close-edit-literature-modal-btn" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times fa-lg"></i>
+                </button>
+            </div>
+            <form id="edit-literature-form" class="space-y-4 flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                <input type="hidden" id="edit-literature-id">
+                <div>
+                    <label for="edit-lit-title" class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-500">*</span></label>
+                    <input type="text" id="edit-lit-title" class="input-field" required>
+                </div>
+                <div>
+                    <label for="edit-lit-pdf-url" class="block text-sm font-medium text-gray-700 mb-1">External PDF URL</label>
+                    <input type="url" id="edit-lit-pdf-url" class="input-field" placeholder="https://example.com/document.pdf">
+                </div>
+                 <div>
+                     <label class="block text-sm font-medium text-gray-700 mb-1">Upload PDF File (Overrides external URL if both provided)</label>
+                     <div class="flex items-center space-x-2">
+                         <input type="file" id="edit-lit-pdf-upload-file" accept="application/pdf" class="input-field file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-accent-100 file:text-accent hover:file:bg-accent-200 cursor-pointer"/>
+                     </div>
+                     <p id="edit-lit-pdf-upload-status" class="mt-1 text-sm text-gray-500">No server PDF. Upload one or add external URL.</p>
+                 </div>
+                <div>
+                    <label for="edit-lit-authors" class="block text-sm font-medium text-gray-700 mb-1">Authors</label>
+                    <textarea id="edit-lit-authors" rows="2" class="input-field" placeholder="e.g., Smith J, Doe A"></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-lit-year" class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                        <input type="number" id="edit-lit-year" class="input-field" placeholder="YYYY">
+                    </div>
+                    <div>
+                        <label for="edit-lit-doi" class="block text-sm font-medium text-gray-700 mb-1">DOI</label>
+                        <input type="text" id="edit-lit-doi" class="input-field" placeholder="10.xxxx/xxxxx">
+                    </div>
+                </div>
+                <div>
+                    <label for="edit-lit-source" class="block text-sm font-medium text-gray-700 mb-1">Source / Journal</label>
+                    <input type="text" id="edit-lit-source" class="input-field">
+                </div>
+                <div>
+                    <label for="edit-lit-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <input type="text" id="edit-lit-status" class="input-field" placeholder="e.g., Read, To Read, Summarized">
+                </div>
+                <div>
+                    <label for="edit-lit-notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea id="edit-lit-notes" rows="3" class="input-field" placeholder="Your notes about this literature..."></textarea>
+                </div>
+            </form>
+            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+                <button id="cancel-edit-literature" class="btn btn-ghost">Cancel</button>
+                <button id="save-literature-changes-btn" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+     <div id="toast-container" class="fixed top-5 right-5 z-[100] w-full max-w-xs sm:max-w-sm">
+         {/* Toasts will be appended here by js/components.js */}
+     </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/pdf-viewer.js"></script>
+    <script src="js/app.js"></script>
+    <!-- Removed initializeDashboard from inline script; app.js handles its own DOMContentLoaded -->
+</body>
+</html>
