@@ -78,8 +78,16 @@ def save_screenshot_route(current_user: User):
 
         # Update the JSON file with data from the committed DB record
         if not new_screenshot.update_json_file(user_data_root_abs):
-             current_app.logger.warning(f"Failed to write JSON metadata file for new screenshot {new_screenshot.id}, but DB record was saved.")
-             # Decide if this should be a critical error. For now, log and proceed.
+            db.session.rollback() # Rollback the session due to file write failure
+            current_app.logger.error(f"CRITICAL: Failed to write JSON metadata file for new screenshot {new_screenshot.id} after DB commit. DB rolled back.")
+            # It's also good practice to attempt to delete the saved image file if the metadata JSON fails
+            if os.path.exists(full_image_path_abs):
+                try:
+                    os.remove(full_image_path_abs)
+                    current_app.logger.info(f"Cleaned up orphaned image file: {full_image_path_abs}")
+                except OSError as e_img_cleanup:
+                    current_app.logger.error(f"Failed to cleanup orphaned image file {full_image_path_abs}: {e_img_cleanup}")
+            return jsonify({"error": "Failed to save screenshot due to file system error after database operation. Operation rolled back."}), 500
 
         current_app.logger.info(f"Screenshot DB ID {new_screenshot.id} saved for user {current_user.id}. Image: {image_relative_path}")
         return jsonify({
@@ -123,8 +131,9 @@ def update_screenshot_metadata_route(current_user: User, screenshot_id: int):
         # Update the JSON file on disk to reflect the DB state
         user_data_root_abs = current_app.config['USER_DATA_ROOT']
         if not screenshot.update_json_file(user_data_root_abs):
-            current_app.logger.warning(f"DB metadata updated for screenshot {screenshot.id}, but failed to update JSON file.")
-            # Non-critical for this response, but important for system consistency.
+            db.session.rollback() # Rollback the session due to file write failure
+            current_app.logger.error(f"CRITICAL: Failed to update JSON metadata file for screenshot {screenshot.id} after DB commit. DB rolled back.")
+            return jsonify({"error": "Failed to update screenshot metadata due to file system error after database operation. Operation rolled back."}), 500
 
         current_app.logger.info(f"Screenshot metadata updated for DB ID {screenshot.id} by user {current_user.id}")
         return jsonify({
@@ -249,11 +258,17 @@ def delete_screenshot_route(current_user: User, screenshot_id: int):
 
         # Attempt to delete files from disk
         if full_image_path and os.path.exists(full_image_path):
-            os.remove(full_image_path)
-            current_app.logger.info(f"Deleted image file: {full_image_path}")
+            try:
+                os.remove(full_image_path)
+                current_app.logger.info(f"Deleted image file: {full_image_path}")
+            except OSError as e_img:
+                current_app.logger.warning(f"Could not delete screenshot image file {full_image_path}: {e_img}")
         if full_metadata_path and os.path.exists(full_metadata_path):
-            os.remove(full_metadata_path)
-            current_app.logger.info(f"Deleted metadata file: {full_metadata_path}")
+            try:
+                os.remove(full_metadata_path)
+                current_app.logger.info(f"Deleted metadata file: {full_metadata_path}")
+            except OSError as e_meta:
+                current_app.logger.warning(f"Could not delete screenshot metadata file {full_metadata_path}: {e_meta}")
         
         # Check if the directory is empty after deleting files and remove it
         # This is a simple check; more robust would be needed if subdirs are complex
